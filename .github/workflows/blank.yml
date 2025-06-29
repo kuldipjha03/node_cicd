@@ -1,0 +1,34 @@
+name: cicd_node
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Deploy to AWS EC2
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.CICD_NODE_HOST }}
+        username: ${{ secrets.CICD_NODE_USER }}
+        key: ${{ secrets.CICD_NODE }}
+        source: "./"  # This now correctly points to the current directory
+        target: "/home/ubuntu/cicd_node/node_cicd"
+
+    - name: Restart PM2 application
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.CICD_NODE_HOST }}
+        username: ${{ secrets.CICD_NODE_USER }}
+        key: ${{ secrets.CICD_NODE }}
+        script: |
+          cd /home/ubuntu/cicd_node/node_cicd
+          pm2 reload all  # This command restarts your application
