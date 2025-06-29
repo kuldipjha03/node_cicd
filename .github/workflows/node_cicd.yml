@@ -2,7 +2,7 @@ name: Node.js CI/CD on Amazon Linux
 
 on:
   push:
-    branches: [ master ]  # Trigger workflow on push to master branch
+    branches: [ master ]
 
 jobs:
   deploy:
@@ -12,8 +12,10 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v2
 
-    - name: Install dependencies (optional)
-      run: npm install
+    - name: Install dependencies (inside subfolder)
+      run: |
+        cd node_cicd
+        npm install
 
     - name: Deploy to AWS EC2
       uses: appleboy/scp-action@master
@@ -21,7 +23,7 @@ jobs:
         host: ${{ secrets.CICD_NODE_HOST }}
         username: ${{ secrets.CICD_NODE_USER }}
         key: ${{ secrets.CICD_NODE }}
-        source: "./"
+        source: "node_cicd/"
         target: "/home/ubuntu/cicd_node/node_cicd"
 
     - name: Restart PM2 application on EC2
