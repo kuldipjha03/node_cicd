@@ -2,7 +2,7 @@ name: Node.js CI/CD on Amazon Linux
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master ]  # Trigger only on master branch push
 
 jobs:
   deploy:
@@ -11,17 +11,10 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
-      
-    - name: Deploy to AWS EC2
-      uses: appleboy/scp-action@master
       with:
-        host: ${{ secrets.CICD_NODE_HOST }}
-        username: ${{ secrets.CICD_NODE_USER }}
-        key: ${{ secrets.CICD_NODE }}
-        source: "node_cicd/"
-        target: "/home/ubuntu/cicd_node/node_cicd"
+        ref: master
 
-    - name: Restart PM2 application on EC2
+    - name: Pull latest code and restart app on EC2
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.CICD_NODE_HOST }}
@@ -29,4 +22,7 @@ jobs:
         key: ${{ secrets.CICD_NODE }}
         script: |
           cd /home/ubuntu/cicd_node/node_cicd
+          git checkout master
+          git pull origin master
+          npm install
           pm2 reload node_cicd || pm2 start index.js --name node_cicd
