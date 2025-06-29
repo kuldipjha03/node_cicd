@@ -2,14 +2,15 @@ name: Node.js CI/CD on Amazon Linux
 
 on:
   push:
-    branches: [ master ]  # Updated to trigger on push to master branch
+    branches: [ master ]  # Trigger workflow on push to master branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout source code
+      uses: actions/checkout@v2
 
     - name: Install dependencies (optional)
       run: npm install
@@ -23,7 +24,7 @@ jobs:
         source: "./"
         target: "/home/ubuntu/cicd_node/node_cicd"
 
-    - name: Restart PM2 application
+    - name: Restart PM2 application on EC2
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.CICD_NODE_HOST }}
@@ -31,4 +32,4 @@ jobs:
         key: ${{ secrets.CICD_NODE }}
         script: |
           cd /home/ubuntu/cicd_node/node_cicd
-          pm2 reload all || pm2 start index.js --name node_cicd
+          pm2 reload node_cicd || pm2 start index.js --name node_cicd
