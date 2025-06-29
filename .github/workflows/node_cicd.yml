@@ -2,7 +2,7 @@ name: Node.js CI/CD on Amazon Linux
 
 on:
   push:
-    branches: [ master ]  # Trigger only on master branch push
+    branches: [ master ]  # Trigger on push to master branch
 
 jobs:
   deploy:
