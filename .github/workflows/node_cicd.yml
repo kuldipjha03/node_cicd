@@ -11,12 +11,7 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
-
-    - name: Install dependencies (inside subfolder)
-      run: |
-        cd cicd_node/node_cicd
-        npm install
-
+      
     - name: Deploy to AWS EC2
       uses: appleboy/scp-action@master
       with:
