@@ -2,7 +2,7 @@ name: Node.js CI/CD on Amazon Linux
 
 on:
   push:
-    branches: [ master ]  # Trigger on push to master branch
+    branches: [ master ]  # Only trigger on push to master branch
 
 jobs:
   deploy:
@@ -14,15 +14,25 @@ jobs:
       with:
         ref: master
 
-    - name: Pull latest code and restart app on EC2
+    - name: SSH to EC2 - Pull and Restart App
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.CICD_NODE_HOST }}
         username: ${{ secrets.CICD_NODE_USER }}
         key: ${{ secrets.CICD_NODE }}
         script: |
-          cd /home/ubuntu/cicd_node/node_cicd
-          git checkout master
-          git pull origin master
-          npm install
-          pm2 reload node_cicd || pm2 start index.js --name node_cicd
+          set -e
+          echo "📁 Navigating to project directory"
+          cd /home/ubuntu/cicd_node/node_cicd || { echo '❌ Directory not found'; exit 1; }
+
+          echo "🔄 Checking out master branch"
+          git checkout master || { echo '❌ Failed to checkout master'; exit 1; }
+
+          echo "📥 Pulling latest code"
+          git pull origin master || { echo '❌ Git pull failed'; exit 1; }
+
+          echo "📦 Installing dependencies"
+          npm install || { echo '❌ npm install failed'; exit 1; }
+
+          echo "🚀 Restarting PM2 app"
+          pm2 reload node_cicd || pm2 start index.js --name node_cicd || { echo '❌ PM2 restart/start failed'; exit 1; }
