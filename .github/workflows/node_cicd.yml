@@ -14,7 +14,7 @@ jobs:
 
     - name: Install dependencies (inside subfolder)
       run: |
-        cd node_cicd
+        cd cicd_node/node_cicd
         npm install
 
     - name: Deploy to AWS EC2
